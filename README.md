@@ -1,4 +1,4 @@
-1. Install postgres, update database url, user and password in application.yml, Also update hibernate.hbm2ddl.auto field to 'create'.
+1. Install postgres, update database url, user and password in application.yml file, Also update hibernate.hbm2ddl.auto field to 'create'.
 This is to create schema for the first time.
 2. Do mvn clean install
 3. Start service by running WeatherServiceAppication class
