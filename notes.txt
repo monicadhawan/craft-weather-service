@@ -3,3 +3,11 @@ UTC timezones later
 
 rounding off float, double values
 latitude, longitude problem -> use POSTGIS
+
+
+docker pull rabbitmq:management-alpine
+docker run -d --hostname mon_the1 --name dw-rabbitmq-mgt -p 4040:15672 -p 4041:5672 rabbitmq:management-alpine
+http://localhost:4040 - RabbitMQ Console
+Start Connector (runs on port 9080)
+Start Ingester (runs on port 9090)
+curl -d "test message" -X POST http://localhost:9080/weather
