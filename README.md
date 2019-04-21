@@ -8,3 +8,4 @@ Now ibernate.hbm2ddl.auto field can be reverted to 'validate', so that data is n
 
 http://localhost:8080/temperature?lat=34.0536834&date=2019-04-17 11:00:00&long=-118.2427669
 http://localhost:8080/temperature/hourly?lat=34.0536834&date=2019-04-17 09:30:09&long=-118.2427669
+http://localhost:8080/temperature/global?limit=1&fromDate=2019-04-13 11:30:09&toDate=2019-04-18 11:30:09

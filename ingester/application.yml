@@ -1,0 +1,13 @@
+amqp:
+  exchange: com.weather.data
+  queue: com.weather.sensors
+  host: localhost
+  port: 4041
+
+server:
+  applicationConnectors:
+  - type: http
+    port: 9000
+  adminConnectors:
+  - type: http
+    port: 9001
