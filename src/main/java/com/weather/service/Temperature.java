@@ -16,8 +16,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class Temperature {
 
-    private final long id;
-
     @Length(max = 32)
     private final String city;
 
@@ -35,6 +33,7 @@ public class Temperature {
     private float min;
 
     @Length(max = 1)
+    @Builder.Default
     private String unit = "F";
 
 }

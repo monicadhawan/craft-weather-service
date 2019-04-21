@@ -39,4 +39,22 @@ public class WeatherResource {
             throw new BadRequestException("Invalid date format");
         }
     }
+
+    @GET
+    @Path("/hourly")
+    @Timed
+    @UnitOfWork
+    public HourlyTemperature getHourlyTemperature(
+            @QueryParam("lat") final Double latitude,
+            @QueryParam("long") final Double longitude,
+            @QueryParam("date") final String date) {
+        try {
+            return temperatureDAO.findByCityHourly(latitude,
+                    longitude,
+                    formatter.parse(date),
+                    () -> new BadRequestException("Weather data not found"));
+        } catch (ParseException e) {
+            throw new BadRequestException("Invalid date format");
+        }
+    }
 }
