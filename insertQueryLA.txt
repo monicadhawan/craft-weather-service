@@ -19,3 +19,4 @@ INSERT INTO TEMPERATURE_EVENTS(locationid, date, hour, temperature, time, wind) 
 INSERT INTO TEMPERATURE_EVENTS(locationid, date, hour, temperature, time, wind) VALUES('4', '2019-04-17 11:30:00','11','30', '06:30:00', '0.54');
 INSERT INTO TEMPERATURE_EVENTS(locationid, date, hour, temperature, time, wind) VALUES('4', '2019-04-17 06:30:00','06','39', '06:30:00', '0.54');
 INSERT INTO TEMPERATURE_EVENTS(locationid, date, hour, temperature, time, wind) VALUES('4', '2019-04-17 06:30:00','06','60', '06:30:00', '0.54');
+INSERT INTO TEMPERATURE_EVENTS(locationid, date, hour, temperature, time, wind) VALUES('4', '2019-04-18 06:30:00','06','12', '06:30:00', '0.54');

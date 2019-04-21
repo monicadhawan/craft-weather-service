@@ -31,7 +31,10 @@ public class WeatherResource {
             @QueryParam("long") final Double longitude,
             @QueryParam("date") final String date) {
         try {
-            return temperatureDAO.findByCityMinMax(latitude, longitude, formatter.parse(date));
+            return temperatureDAO.findByCityMinMax(latitude,
+                    longitude,
+                    formatter.parse(date),
+                    () -> new BadRequestException("Weather data not found"));
         } catch (ParseException e) {
             throw new BadRequestException("Invalid date format");
         }

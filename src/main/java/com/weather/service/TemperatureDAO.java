@@ -5,12 +5,15 @@ import org.hibernate.SessionFactory;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.ws.rs.WebApplicationException;
 import java.util.Date;
+import java.util.function.Supplier;
 
 @Entity
 @Table(name = "TEMPERATURE_EVENTS")
@@ -20,31 +23,14 @@ public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
         super(factory);
     }
 
-/*    public TemperatureEvent findByCity(Double latitude, Double longitude, Date date) {
-        final CriteriaBuilder cb = currentSession().getCriteriaBuilder();
-        CriteriaQuery<TemperatureEvent> criteriaQuery = cb.createQuery(TemperatureEvent.class);
-        Root<TemperatureEvent> from = criteriaQuery.from(TemperatureEvent.class);
-        Predicate dateCriteria = cb.lessThanOrEqualTo(from.<Date>get("date"), date);
-
-        Join location = from.join(TemperatureEvent_.LOCATION);
-        Predicate cityCriteria = cb.and(
-                cb.equal(location.get(Location_.LATITUDE), latitude),
-                cb.equal(location.get(Location_.LONGITUDE), longitude));
-
-        criteriaQuery
-                .select(from)
-                .where(cityCriteria, dateCriteria)
-                .orderBy(cb.desc(from.get(TemperatureEvent_.DATE)));
-        return currentSession().createQuery(criteriaQuery).setMaxResults(1).getSingleResult();
-    }*/
-
-    public Temperature findByCityMinMax(Double latitude, Double longitude, Date date) {
+    public Temperature findByCityMinMax(Double latitude, Double longitude, Date date,
+                                        Supplier<? extends WebApplicationException> exceptionSupplier) {
         final CriteriaBuilder cb = currentSession().getCriteriaBuilder();
 
         // Get current temperature
         CriteriaQuery<Temperature> criteriaQuery = cb.createQuery(Temperature.class);
         Root<TemperatureEvent> from = criteriaQuery.from(TemperatureEvent.class);
-        Predicate dateCriteria = cb.lessThanOrEqualTo(from.<Date>get(TemperatureEvent_.DATE), date);
+        Predicate dateCriteria = cb.lessThanOrEqualTo(from.get(TemperatureEvent_.DATE), date);
         Join location = from.join(TemperatureEvent_.LOCATION);
         Predicate cityCriteria = getLocationCriteria(latitude, longitude, location, cb);
         criteriaQuery
@@ -54,30 +40,24 @@ public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
                         location.get(Location_.LONGITUDE)))
                 .where(cityCriteria, dateCriteria)
                 .orderBy(cb.desc(from.get(TemperatureEvent_.DATE)));
-        Temperature temp =  currentSession().createQuery(criteriaQuery).setMaxResults(1).getSingleResult();
+        Temperature temp =  currentSession().createQuery(criteriaQuery).getResultStream()
+                .findFirst()
+                .orElseThrow(exceptionSupplier);
 
-        // Get Max temp
-        //TODO date comparison
-        CriteriaQuery<Float> getMaxTempQuery = cb.createQuery(Float.class);
-        Root<TemperatureEvent> fromForMax = getMaxTempQuery.from(TemperatureEvent.class);
-        Join locationForMax = fromForMax.join(TemperatureEvent_.LOCATION);
-        Predicate cityCriteriaForMax = getLocationCriteria(latitude, longitude, locationForMax, cb);
-        getMaxTempQuery.select(cb.max(fromForMax.<Float>get(TemperatureEvent_.TEMPERATURE)))
-                .where(cityCriteriaForMax);
-        float max = currentSession().createQuery(getMaxTempQuery).getSingleResult();
-        temp.setMax(max);
-
-        // Get Min temp
-        //TODO date comparison
-        CriteriaQuery<Float> getMinTempQuery = cb.createQuery(Float.class);
-        Root<TemperatureEvent> fromForMin = getMinTempQuery.from(TemperatureEvent.class);
-        Join locationForMin = fromForMin.join(TemperatureEvent_.LOCATION);
-        Predicate cityCriteriaForMin = getLocationCriteria(latitude, longitude, locationForMin, cb);
-        getMinTempQuery.select(cb.min(fromForMin.<Float>get(TemperatureEvent_.TEMPERATURE)))
-                .where(cityCriteriaForMin);
-        float min = currentSession().createQuery(getMinTempQuery).getSingleResult();
-        temp.setMin(min);
-
+        // Get min and max temp
+        CriteriaQuery<Tuple> getMinMaxTempQuery = cb.createTupleQuery();
+        Root<TemperatureEvent> fromMinMax = getMinMaxTempQuery.from(TemperatureEvent.class);
+        Join locationForMax = fromMinMax.join(TemperatureEvent_.LOCATION);
+        Predicate locationCriteriaForMinMax = getLocationCriteria(latitude, longitude, locationForMax, cb);
+        Predicate dateBetween = cb.between(from.get(TemperatureEvent_.DATE),
+                Datehelper.getDateWithoutTime(date),
+                Datehelper.getTomorrowDate(date));
+        getMinMaxTempQuery.select(cb.tuple(cb.max(fromMinMax.get(TemperatureEvent_.TEMPERATURE)),
+                cb.min(fromMinMax.get(TemperatureEvent_.TEMPERATURE))))
+                .where(locationCriteriaForMinMax, dateBetween);
+        Tuple temperature = currentSession().createQuery(getMinMaxTempQuery).uniqueResultOptional().orElseThrow(exceptionSupplier);
+        temp.setMax(temperature.get(0, Float.class));
+        temp.setMin(temperature.get(1, Float.class));
         return temp;
     }
 
