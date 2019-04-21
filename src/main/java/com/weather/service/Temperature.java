@@ -1,0 +1,40 @@
+package com.weather.service;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
+
+import java.util.Date;
+
+@Builder
+@Getter
+@Setter
+@RequiredArgsConstructor
+@AllArgsConstructor
+public class Temperature {
+
+    private final long id;
+
+    @Length(max = 32)
+    private final String city;
+
+    @Length(max = 32)
+    private final float temperature;
+
+    private final Date observedTime;
+
+    private final Double latitude;
+
+    private final Double longitude;
+
+    private float max;
+
+    private float min;
+
+    @Length(max = 1)
+    private String unit = "F";
+
+}

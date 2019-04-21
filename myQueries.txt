@@ -1,0 +1,7 @@
+select id, date, temperature from temperature_events where date <= '2019-04-17 09:00:00' order by date desc limit 1;  - Get temperature by given timestamp
+select city, hour, AVG(temperature_events.temperature) from temperature_events group by hour, city; - Avg temperature by hour
+select hour, max(temperature) as maxTemp from temperature_events where date < '2019-04-18 00:00:00' and date >= '2019-04-17 00:00:00' and city='Boston' group by hour order by maxTemp desc limit 1; - Max temperature in ay timestamp
+
+select city, max(temperature) as maxTemp from temperature_events where date < '2019-04-18 00:00:00' and date >= '2019-04-17 00:00:00' group by city order by maxTemp desc limit 2; - Max 2 temperatures by city
+
+select * from temperature_events t INNER JOIN (select id, max(temperature) as maxTemp from temperature_events where date < '2019-04-18 00:00:00' and date >= '2019-04-17 00:00:00' group by city, id order by maxTemp desc limit 2) t1 ON t1.id = t.id; - max 2 temperatures with 
