@@ -13,6 +13,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 @Path("/temperature")
 @Produces(MediaType.APPLICATION_JSON)
@@ -52,6 +53,25 @@ public class WeatherResource {
             return temperatureDAO.findByCityHourly(latitude,
                     longitude,
                     formatter.parse(date),
+                    () -> new BadRequestException("Weather data not found"));
+        } catch (ParseException e) {
+            throw new BadRequestException("Invalid date format");
+        }
+    }
+
+    @GET
+    @Path("/global")
+    @Timed
+    @UnitOfWork
+    public List<GlobalTemperature> getGlobalTemperature(
+            @QueryParam("fromDate") final String fromDate,
+            @QueryParam("toDate") final String toDate,
+            @QueryParam("type") final String type,
+            @QueryParam("limit") final int limit) {
+        try {
+            return temperatureDAO.findGlobalTemperatureMax(formatter.parse(fromDate),
+                    formatter.parse(toDate),
+                    limit,
                     () -> new BadRequestException("Weather data not found"));
         } catch (ParseException e) {
             throw new BadRequestException("Invalid date format");

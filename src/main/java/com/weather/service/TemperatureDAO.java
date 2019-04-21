@@ -3,26 +3,23 @@ package com.weather.service;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.ws.rs.WebApplicationException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-@Entity
-@Table(name = "TEMPERATURE_EVENTS")
+
 public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
 
     public TemperatureDAO(SessionFactory factory) {
@@ -81,12 +78,12 @@ public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
         getHourlyQuery.select(cb.tuple(from.get(TemperatureEvent_.HOUR),
                 cb.avg(from.get(TemperatureEvent_.TEMPERATURE))))
                 .where(locationCriteria, dateBetween)
+                .orderBy(cb.asc(from.get(TemperatureEvent_.HOUR)))
                 .groupBy(from.get(TemperatureEvent_.HOUR));
         List<Tuple> temperature = currentSession().createQuery(getHourlyQuery).getResultList();
         if (temperature.isEmpty())
             throw exceptionSupplier.get();
-        HashMap<String, Double> hourList = new HashMap<>();
-        temperature.sort(Comparator.comparing(x -> x.get(0, Integer.class)));
+        HashMap<String, Double> hourList = new LinkedHashMap<>();
         temperature.forEach(hour -> hourList.put(hour.get(0, Integer.class).toString().concat(":00"), hour.get(1, Double.class)));
         return HourlyTemperature.builder()
                 .city(getCity(latitude, longitude, cb).orElseThrow(exceptionSupplier))
@@ -94,6 +91,49 @@ public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
                 .longitude(longitude)
                 .hourlyTemperatures(hourList)
                 .build();
+    }
+
+
+    public List<GlobalTemperature> findGlobalTemperatureMax(Date fromDate, Date toDate, int limit,
+                                                   Supplier<? extends WebApplicationException> exceptionSupplier) {
+        int max = limit > 10 || limit < 1 ? 10 : limit;
+
+        final CriteriaBuilder cb = currentSession().getCriteriaBuilder();
+
+        CriteriaQuery<Tuple> getGlobalTemp = cb.createTupleQuery();
+        Root<TemperatureEvent> from = getGlobalTemp.from(TemperatureEvent.class);
+        Join location = from.join(TemperatureEvent_.LOCATION);
+        Predicate dateBetween = cb.between(from.get(TemperatureEvent_.DATE),
+                fromDate,
+                toDate);
+        Expression maxTemp = cb.max(from.get(TemperatureEvent_.TEMPERATURE));
+        getGlobalTemp.select(cb.tuple(location.get(Location_.ID).alias("location"),
+                maxTemp.alias("maxTemp")))
+                .where(dateBetween)
+                .orderBy(cb.desc(maxTemp))
+                .groupBy(location.get(Location_.ID));
+
+        List<Tuple> maxTempsByLocation = currentSession().createQuery(getGlobalTemp).setMaxResults(max).getResultList();
+        if (maxTempsByLocation.isEmpty())
+            throw exceptionSupplier.get();
+
+        CriteriaQuery<Location> getList =  cb.createQuery(Location.class);
+        Root<Location> fromTable = getList.from(Location.class);
+        CriteriaBuilder.In<Long> in = cb.in(fromTable.get(Location_.ID));
+        maxTempsByLocation.forEach(x -> in.value(x.get("location", Long.class)));
+        getList.select(fromTable).where(in);
+        List<Location> locations = currentSession().createQuery(getList).getResultList();
+
+        return maxTempsByLocation.stream().map(tuple -> {
+            Long locationId = tuple.get("location", Long.class);
+            Location eachLocation = locations.stream().filter(loc -> loc.getId() == locationId).findFirst().orElseThrow(exceptionSupplier);
+            return GlobalTemperature.builder()
+                    .temperature(tuple.get("maxTemp", Float.class))
+                    .latitude(eachLocation.getLatitude())
+                    .longitude(eachLocation.getLongitude())
+                    .city(eachLocation.getCity())
+                    .build();
+        }).collect(Collectors.toList());
     }
 
 

@@ -1,5 +1,6 @@
 package com.weather.service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
@@ -41,6 +42,7 @@ public class WeatherServiceApplication extends Application<WeatherServiceConfigu
         formatter.setTimeZone(TimeZone.getDefault());
         environment.jersey().register(new WeatherResource(temperatureDAO, formatter));
         environment.getObjectMapper().setDateFormat(formatter);
+        environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     }
 
