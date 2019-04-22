@@ -1,4 +1,4 @@
-package com.weather.service.external.connector.api.request;
+package com.weather.service.ingester.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -29,3 +29,4 @@ public class WeatherRequest implements Serializable {
     @JsonProperty
     private float temperature;
 }
+

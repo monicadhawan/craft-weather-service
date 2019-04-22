@@ -4,6 +4,7 @@ import com.weather.service.external.connector.api.request.WeatherRequest;
 import com.weather.service.external.connector.client.AMQPClient;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 public class ConnectorService {
     private AMQPClient amqpClient;
@@ -18,7 +19,7 @@ public class ConnectorService {
         amqpClient.sendMessage(weatherRequest);
     }
 
-    public void testStringResource(String record) throws IOException {
-        amqpClient.sendMessage(record);
-    }
+//    public void testStringResource(String record) throws IOException {
+//        amqpClient.sendMessage(record);
+//    }
 }

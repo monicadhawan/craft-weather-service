@@ -11,3 +11,13 @@ http://localhost:4040 - RabbitMQ Console
 Start Connector (runs on port 9080)
 Start Ingester (runs on port 9090)
 curl -d "test message" -X POST http://localhost:9080/weather
+
+{
+    "date": "2019-04-13 11:30:09",
+    "time": "2019-04-13 11:30:09",
+    "hour":4,
+    "lat": 34.053683,
+    "longitude": -118.2427669,
+    "wind": 0.25,
+    "temperature": 45.0
+}
