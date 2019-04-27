@@ -11,6 +11,13 @@
 
 
     <artifactId>ingester</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.weather.service</groupId>
+            <artifactId>query-service</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 
 </project>

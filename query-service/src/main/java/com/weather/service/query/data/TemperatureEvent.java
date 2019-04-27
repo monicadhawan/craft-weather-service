@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -35,7 +36,7 @@ public class TemperatureEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumns(foreignKey = @ForeignKey(name = "TEMP_LOC_FK"), value = {
             @JoinColumn(name = "locationId", referencedColumnName = "id")
     })
@@ -45,9 +46,9 @@ public class TemperatureEvent {
     @Column(name = "date", nullable = false)
     private Date date;
 
-    @Temporal(TemporalType.TIME)
+/*    @Temporal(TemporalType.TIME)
     @Column(name = "time", nullable = false)
-    private Date time;
+    private Date time;*/
 
     @Column(name = "hour", nullable = false)
     private int hour;

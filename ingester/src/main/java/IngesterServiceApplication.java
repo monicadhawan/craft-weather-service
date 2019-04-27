@@ -2,7 +2,15 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.weather.service.ingester.client.AMQPClient;
 import com.weather.service.ingester.config.IngesterConfiguration;
+import com.weather.service.query.api.response.Temperature;
+import com.weather.service.query.config.WeatherServiceConfiguration;
+import com.weather.service.query.data.Location;
+import com.weather.service.query.data.TemperatureEvent;
+import com.weather.service.query.data.dao.TemperatureDAO;
 import io.dropwizard.Application;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
@@ -16,6 +24,13 @@ public class IngesterServiceApplication extends Application<IngesterConfiguratio
         new IngesterServiceApplication().run(command, applicationYamlFile);
     }
 
+    private final HibernateBundle<IngesterConfiguration> hibernate = new HibernateBundle<IngesterConfiguration>(TemperatureEvent.class,
+            Location.class) {
+        public DataSourceFactory getDataSourceFactory(IngesterConfiguration configuration) {
+            return configuration.getDatabase();
+        }
+    };
+
 
     @Override
     public String getName() {
@@ -24,17 +39,23 @@ public class IngesterServiceApplication extends Application<IngesterConfiguratio
 
     @Override
     public void initialize(Bootstrap<IngesterConfiguration> bootstrap) {
-        // nothing to initialize
+        bootstrap.addBundle(hibernate);
     }
 
     @Override
     public void run(IngesterConfiguration configuration,
                     Environment environment) throws IOException, TimeoutException {
+        final TemperatureDAO temperatureDAO = new TemperatureDAO(hibernate.getSessionFactory());
         ConnectionFactory connectionFactory = createConnectionFactory(configuration);
         Connection connection = connectionFactory.newConnection();
         AMQPClient amqpClient = new AMQPClient(connection.createChannel(), connection, configuration.getAmqpConfiguration().getQueue());
+       // Class[] paramTypes = new Class[] {AMQPClient.class, TemperatureDAO.class};
+        QueueConsumer queueConsumer = new UnitOfWorkAwareProxyFactory(hibernate)
+                .create(QueueConsumer.class,
+                        new Class[] {AMQPClient.class, TemperatureDAO.class} ,
+                        new Object[] {amqpClient, temperatureDAO});
 
-        QueueConsumer queueConsumer = new QueueConsumer(amqpClient);
+       // QueueConsumer queueConsumer = new QueueConsumer(amqpClient, temperatureDAO);
         Thread consumerThread = new Thread(queueConsumer);
         consumerThread.start();
 

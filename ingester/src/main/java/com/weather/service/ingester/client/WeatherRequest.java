@@ -18,10 +18,10 @@ public class WeatherRequest implements Serializable {
     private int hour;
 
     @JsonProperty
-    private long lat;
+    private double lat;
 
     @JsonProperty
-    private long longitude;
+    private double longitude;
 
     @JsonProperty
     private float wind;
