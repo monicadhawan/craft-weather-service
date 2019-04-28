@@ -59,7 +59,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.weather.service.query.WeatherServiceApplication</mainClass>
+                                    <mainClass>WeatherServiceApplication</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
