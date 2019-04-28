@@ -14,6 +14,7 @@ import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
@@ -23,7 +24,10 @@ import javax.persistence.TemporalType;
 import java.util.Date;
 
 @Entity
-@Table(name = "TEMPERATURE_EVENTS")
+@Table(name = "TEMPERATURE_EVENTS", indexes = {
+        @Index(columnList = "date, locationid", name = "date_location_index"),
+        @Index(columnList = "hour, locationid", name = "hour_location_index")
+})
 @Getter
 @Setter
 @Builder
@@ -38,7 +42,7 @@ public class TemperatureEvent {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumns(foreignKey = @ForeignKey(name = "TEMP_LOC_FK"), value = {
-            @JoinColumn(name = "locationId", referencedColumnName = "id")
+            @JoinColumn(name = "locationId", referencedColumnName = "id", nullable = false)
     })
     private Location location;
 

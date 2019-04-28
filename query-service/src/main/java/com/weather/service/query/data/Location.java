@@ -12,10 +12,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "LOCATION")
+@Table(name = "LOCATION", indexes = {
+        @Index(columnList = "lat, long", name = "lat_long_index", unique = true)
+})
 @Getter
 @Setter
 @Builder
