@@ -2,9 +2,10 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.weather.service.external.connector.api.ConnectorResource;
-import com.weather.service.external.connector.api.ConnectorService;
-import com.weather.service.external.connector.client.AMQPClient;
+import com.weather.service.external.connector.service.ConnectorResource;
+import com.weather.service.external.connector.service.ConnectorService;
+import com.weather.service.external.connector.client.AMQPClientImpl;
+import com.weather.service.external.connector.client.api.AMQPClient;
 import com.weather.service.external.connector.config.ConnectorConfiguration;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -43,7 +44,7 @@ public class ConnectorServiceApplication extends Application<ConnectorConfigurat
                 configuration.getAmqpConfiguration().getExchange(),
                 configuration.getAmqpConfiguration().getRoutingKey());
 
-        AMQPClient amqpClient = new AMQPClient(
+        AMQPClient amqpClient = new AMQPClientImpl(
                 channel,
                 connection,
                 configuration.getAmqpConfiguration().getExchange(),

@@ -1,5 +1,5 @@
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.weather.service.query.api.WeatherResource;
+import com.weather.service.query.service.WeatherResource;
 import com.weather.service.query.config.WeatherServiceConfiguration;
 import com.weather.service.query.data.Location;
 import com.weather.service.query.data.dao.TemperatureDAO;

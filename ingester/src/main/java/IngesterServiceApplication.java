@@ -1,9 +1,8 @@
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.weather.service.ingester.client.AMQPClient;
+import com.weather.service.ingester.client.AMQPClientImpl;
+import com.weather.service.ingester.client.api.AMQPClient;
 import com.weather.service.ingester.config.IngesterConfiguration;
-import com.weather.service.query.api.response.Temperature;
-import com.weather.service.query.config.WeatherServiceConfiguration;
 import com.weather.service.query.data.Location;
 import com.weather.service.query.data.TemperatureEvent;
 import com.weather.service.query.data.dao.TemperatureDAO;
@@ -48,14 +47,11 @@ public class IngesterServiceApplication extends Application<IngesterConfiguratio
         final TemperatureDAO temperatureDAO = new TemperatureDAO(hibernate.getSessionFactory());
         ConnectionFactory connectionFactory = createConnectionFactory(configuration);
         Connection connection = connectionFactory.newConnection();
-        AMQPClient amqpClient = new AMQPClient(connection.createChannel(), connection, configuration.getAmqpConfiguration().getQueue());
-       // Class[] paramTypes = new Class[] {AMQPClient.class, TemperatureDAO.class};
+        AMQPClient amqpClient = new AMQPClientImpl(connection.createChannel(), configuration.getAmqpConfiguration().getQueue());
         QueueConsumer queueConsumer = new UnitOfWorkAwareProxyFactory(hibernate)
                 .create(QueueConsumer.class,
                         new Class[] {AMQPClient.class, TemperatureDAO.class} ,
                         new Object[] {amqpClient, temperatureDAO});
-
-       // QueueConsumer queueConsumer = new QueueConsumer(amqpClient, temperatureDAO);
         Thread consumerThread = new Thread(queueConsumer);
         consumerThread.start();
 

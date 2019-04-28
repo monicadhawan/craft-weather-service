@@ -1,10 +1,10 @@
-package com.weather.service.query.api;
+package com.weather.service.query.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.weather.service.query.data.dao.TemperatureDAO;
-import com.weather.service.query.api.response.GlobalTemperature;
-import com.weather.service.query.api.response.HourlyTemperature;
-import com.weather.service.query.api.response.Temperature;
+import com.weather.service.query.service.response.GlobalTemperature;
+import com.weather.service.query.service.response.HourlyTemperature;
+import com.weather.service.query.service.response.Temperature;
 import io.dropwizard.hibernate.UnitOfWork;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -73,9 +73,10 @@ public class WeatherResource {
             @QueryParam("type") final String type,
             @QueryParam("limit") final int limit) {
         try {
-            return temperatureDAO.findGlobalTemperatureMax(formatter.parse(fromDate),
+            return temperatureDAO.findGlobalTemperature(formatter.parse(fromDate),
                     formatter.parse(toDate),
                     limit,
+                    type,
                     () -> new BadRequestException("Weather data not found"));
         } catch (ParseException e) {
             throw new BadRequestException("Invalid date format");

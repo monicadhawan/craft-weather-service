@@ -1,4 +1,4 @@
-package com.weather.service.query.api.response;
+package com.weather.service.query.service.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

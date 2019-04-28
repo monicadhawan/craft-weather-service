@@ -1,8 +1,8 @@
 package com.weather.service.query.data.dao;
 
-import com.weather.service.query.api.response.GlobalTemperature;
-import com.weather.service.query.api.response.HourlyTemperature;
-import com.weather.service.query.api.response.Temperature;
+import com.weather.service.query.service.response.GlobalTemperature;
+import com.weather.service.query.service.response.HourlyTemperature;
+import com.weather.service.query.service.response.Temperature;
 import com.weather.service.query.data.Datehelper;
 import com.weather.service.query.data.Location;
 import com.weather.service.query.data.Location_;
@@ -102,8 +102,8 @@ public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
     }
 
 
-    public List<GlobalTemperature> findGlobalTemperatureMax(Date fromDate, Date toDate, int limit,
-                                                            Supplier<? extends WebApplicationException> exceptionSupplier) {
+    public List<GlobalTemperature> findGlobalTemperature(Date fromDate, Date toDate, int limit, String type,
+                                                         Supplier<? extends WebApplicationException> exceptionSupplier) {
         int max = limit > 10 || limit < 1 ? 10 : limit;
 
         final CriteriaBuilder cb = currentSession().getCriteriaBuilder();
@@ -114,12 +114,23 @@ public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
         Predicate dateBetween = cb.between(from.get(TemperatureEvent_.DATE),
                 fromDate,
                 toDate);
-        Expression maxTemp = cb.max(from.get(TemperatureEvent_.TEMPERATURE));
-        getGlobalTemp.select(cb.tuple(location.get(Location_.ID).alias("location"),
-                maxTemp.alias("maxTemp")))
-                .where(dateBetween)
-                .orderBy(cb.desc(maxTemp))
-                .groupBy(location.get(Location_.ID));
+        Expression tempType;
+        if (type.equalsIgnoreCase("max")) {
+            tempType = cb.max(from.get(TemperatureEvent_.TEMPERATURE));
+            getGlobalTemp.select(cb.tuple(location.get(Location_.ID).alias("location"),
+                    tempType.alias("foundTemp")))
+                    .where(dateBetween)
+                    .orderBy(cb.desc(tempType))
+                    .groupBy(location.get(Location_.ID));
+        }
+        else {
+            tempType = cb.min(from.get(TemperatureEvent_.TEMPERATURE));
+            getGlobalTemp.select(cb.tuple(location.get(Location_.ID).alias("location"),
+                    tempType.alias("foundTemp")))
+                    .where(dateBetween)
+                    .orderBy(cb.asc(tempType))
+                    .groupBy(location.get(Location_.ID));
+        }
 
         List<Tuple> maxTempsByLocation = currentSession().createQuery(getGlobalTemp).setMaxResults(max).getResultList();
         if (maxTempsByLocation.isEmpty())
@@ -136,7 +147,7 @@ public class TemperatureDAO extends AbstractDAO<TemperatureEvent> {
             Long locationId = tuple.get("location", Long.class);
             Location eachLocation = locations.stream().filter(loc -> loc.getId() == locationId).findFirst().orElseThrow(exceptionSupplier);
             return GlobalTemperature.builder()
-                    .temperature(tuple.get("maxTemp", Float.class))
+                    .temperature(tuple.get("foundTemp", Float.class))
                     .latitude(eachLocation.getLatitude())
                     .longitude(eachLocation.getLongitude())
                     .city(eachLocation.getCity())

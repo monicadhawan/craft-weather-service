@@ -1,6 +1,6 @@
-package com.weather.service.external.connector.api;
+package com.weather.service.external.connector.service;
 
-import com.weather.service.external.connector.api.request.WeatherRequest;
+import com.weather.service.external.connector.service.request.WeatherRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Valid;
@@ -24,12 +24,7 @@ public class ConnectorResource {
     }
 
     @POST
-    public void getWeatherReading(@Valid final WeatherRequest weatherRecordDto) throws IOException {
-        connectorService.saveWeatherRecord(weatherRecordDto);
+    public void getWeatherReading(@Valid final WeatherRequest weatherRequest) throws IOException {
+        connectorService.saveWeatherRecord(weatherRequest);
     }
-
-   /* @POST
-    public void testEndpointRemoveLater(String string) throws IOException {
-        connectorService.testStringResource(string);
-    }*/
 }

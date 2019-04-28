@@ -12,9 +12,6 @@ public class WeatherRequest implements Serializable {
     private String date;
 
     @JsonProperty
-    private String time;
-
-    @JsonProperty
     private int hour;
 
     @JsonProperty

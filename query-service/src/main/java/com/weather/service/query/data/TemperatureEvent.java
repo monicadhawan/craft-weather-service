@@ -46,10 +46,6 @@ public class TemperatureEvent {
     @Column(name = "date", nullable = false)
     private Date date;
 
-/*    @Temporal(TemporalType.TIME)
-    @Column(name = "time", nullable = false)
-    private Date time;*/
-
     @Column(name = "hour", nullable = false)
     private int hour;
 
