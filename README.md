@@ -1,4 +1,4 @@
-#Weather API
+# Weather API
 Weather API is a RESTful micro-service for providing weather details. 
 It currently supports the following set of queries: 
 1. Get current, minimum and maximum temperature data for a city (latitude, longitude) on a requested date
@@ -44,20 +44,20 @@ curl -X GET \
 3. Run `service postgresql start`
 
 ## Start RabbitMQ container
-1. docker pull rabbitmq:management-alpine
-2. docker run -d --hostname mon_the1 --name dw-rabbitmq-mgt -p 4040:15672 -p 4041:5672 rabbitmq:management-alpine
+1. `docker pull rabbitmq:management-alpine`
+2. `docker run -d --hostname mon_the1 --name dw-rabbitmq-mgt -p 4040:15672 -p 4041:5672 rabbitmq:management-alpine`
 3. Management console link : http://localhost:4040
 
 ## Build images
 1. Update database config in application.yml file of query-service module - url, port, user, password
-2. cd query-service && docker build -t query-service .
-3. cd ingester && docker build -t ingester .
-4. cd external-connector && docker build -t external-connector .
+2. `cd query-service && docker build -t query-service .`
+3. `cd ingester && docker build -t ingester .`
+4. `cd external-connector && docker build -t external-connector .`
 
 ## Run images
-1. docker run -p 8080:8080 -p 8081:8081 --network="host" query-service:latest
-2. docker run -p 9080:9080 -p 9081:9081 --network="host" external-connector:latest
-3. docker run --network="host" ingester:latest
+1. `docker run -p 8080:8080 -p 8081:8081 --network="host" query-service:latest`
+2. `docker run -p 9080:9080 -p 9081:9081 --network="host" external-connector:latest`
+3. `docker run --network="host" ingester:latest`
 
 ## Seed database with dummy data (Optional)
 Run insert queries written in 'insertDbQueries.txt' in postgres container.
